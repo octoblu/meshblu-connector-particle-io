@@ -1,0 +1,161 @@
+{
+  "_id": "56b383bd0ff23fc2acbf477b",
+  "auth_strategy": "header",
+  "description": "",
+  "documentation": "https://docs.particle.io/reference/api/",
+  "enabled": true,
+  "name": "Particle.io",
+  "type": "channel:particle",
+  "skipVerifySSL": true,
+  "oauth": {
+    "development": {
+      "tokenMethod": "access_token_bearer"
+    },
+    "staging": {
+      "tokenMethod": "access_token_bearer"
+    },
+    "production": {
+      "tokenMethod": "access_token_bearer"
+    }
+  },
+  "application": {
+    "base": "https://api.particle.io/v1",
+    "resources": [
+      {
+        "params": [
+          ],
+        "path": "/devices",
+        "displayName": "Get All Devices",
+        "authentication": {
+          "required": "true"
+        },
+        "doc": {
+          "url": "https://docs.particle.io/reference/api/#devices"
+        },
+        "httpMethod": "GET",
+        "url": "https://api.particle.io/v1/devices"
+      },
+      {
+        "params": [
+          {
+            "required": "true",
+            "type": "string",
+            "style": "url",
+            "name": ":deviceId",
+            "displayName": "DeviceID"
+          }
+          ],
+        "path": "/devices/:deviceId",
+        "displayName": "Get Device Information",
+        "authentication": {
+          "required": "true"
+        },
+        "doc": {
+          "url": "https://docs.particle.io/reference/api/#devices"
+        },
+        "httpMethod": "GET",
+        "url": "https://api.particle.io/v1/devices/:deviceId"
+      },
+      {
+        "params": [
+          {
+            "required": "true",
+            "type": "string",
+            "style": "url",
+            "name": ":deviceId",
+            "displayName": "DeviceID"
+          },
+          {
+            "required": "true",
+            "type": "string",
+            "style": "url",
+            "name": ":varName",
+            "displayName": "Variable Name"
+          }
+          ],
+        "path": "/devices/:deviceId/:varName",
+        "displayName": "Get A Variable Value",
+        "authentication": {
+          "required": "true"
+        },
+        "doc": {
+          "url": "https://docs.particle.io/reference/api/#devices"
+        },
+        "httpMethod": "GET",
+        "url": "https://api.particle.io/v1/devices/:deviceId/:varName"
+      },
+      {
+        "params": [
+          {
+            "required": "true",
+            "type": "string",
+            "style": "url",
+            "name": ":deviceId",
+            "displayName": "DeviceID"
+          },
+          {
+            "required": "true",
+            "type": "string",
+            "style": "url",
+            "name": ":functionName",
+            "displayName": "Function Name"
+          },
+          {
+            "type": "string",
+            "style": "body",
+            "name": "arg",
+            "displayName": "Argument"
+          }
+          ],
+        "path": "/devices/:deviceId/:functionName",
+        "displayName": "Call A Function",
+        "authentication": {
+          "required": "true"
+        },
+        "doc": {
+          "url": "https://docs.particle.io/reference/api/#devices"
+        },
+        "httpMethod": "POST",
+        "url": "https://api.particle.io/v1/devices/:deviceId/:functionName"
+      },
+      {
+        "params": [
+          {
+            "type": "string",
+            "style": "body",
+            "name": "name",
+            "displayName": "Event Name"
+          },
+          {
+            "type": "string",
+            "style": "body",
+            "name": "data",
+            "displayName": "Event Data"
+          },
+          {
+            "type": "boolean",
+            "style": "body",
+            "name": "private",
+            "displayName": "Private?"
+          },
+          {
+            "type": "number",
+            "style": "body",
+            "name": "ttl",
+            "displayName": "TTL"
+          }
+          ],
+        "path": "/devices/events",
+        "displayName": "Publish An Event",
+        "authentication": {
+          "required": "true"
+        },
+        "doc": {
+          "url": "https://docs.particle.io/reference/api/#events"
+        },
+        "httpMethod": "POST",
+        "url": "https://api.particle.io/v1/devices/events"
+      }
+    ]
+  }
+}

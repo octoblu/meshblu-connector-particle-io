@@ -1,0 +1,11 @@
+{
+  "optionsSchema": {
+    "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "required": true
+        }
+      }
+  }
+}
