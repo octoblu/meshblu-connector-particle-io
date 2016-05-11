@@ -7,17 +7,6 @@
   "name": "Particle.io",
   "type": "channel:particle",
   "skipVerifySSL": true,
-  "oauth": {
-    "development": {
-      "tokenMethod": "access_token_bearer"
-    },
-    "staging": {
-      "tokenMethod": "access_token_bearer"
-    },
-    "production": {
-      "tokenMethod": "access_token_bearer"
-    }
-  },
   "application": {
     "base": "https://api.particle.io/v1",
     "resources": [

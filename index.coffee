@@ -1,12 +1,11 @@
-{EventEmitter}  = require 'events'
-debug           = require('debug')('meshblu-connector-particle-io:index')
+{EventEmitter}          = require 'events'
+debug                   = require('debug')('meshblu-connector-particle-io:index')
 _                       = require 'lodash'
 channelJson             = require './channelJson'
 schemas                 = require './legacySchemas.json'
 request                 = require 'request'
 OctobluRequestFormatter = require 'octoblu-request-formatter'
 format                  = new OctobluRequestFormatter(channelJson)
-
 
 class ParticleIo extends EventEmitter
   constructor: ->
@@ -24,30 +23,40 @@ class ParticleIo extends EventEmitter
     { topic, devices, fromUuid } = message
     return if '*' in devices
     return if fromUuid == @uuid
-    debug 'onMessage', { topic }
+    debug 'onMessage', { message }
     return if !message.payload.endpoint?
+
     requestParams = format.processMessage message.payload, @auth, @defaultUrlParams
 
-    debug 'formatted request', requestParams
-
     if @auth.access_token?
-      requestParams.headers.Authorization = "bearer " + @auth.access_token
+      requestParams = @applyAuth(requestParams)
+      debug 'formatted request', requestParams
+
       debug 'Sending Request'
       request requestParams, (error, response, body) =>
         return @sendError error if error?
         body = JSON.parse(body)
         @emit 'message', devices: ["*"], payload: body
         debug 'Body: ', body
+    else
+      @sendError 'Missing access_token!'
 
   onConfig: (config) =>
     return unless config?
     debug 'on config', @uuid
-    @options = config.options
+    @options = config.options || {}
 
     @defaultUrlParams = {}
-    @auth = {
-      access_token: @options.access_token
-    }
+
+    if @options.access_token?
+      @auth = {
+        access_token: @options.access_token
+      }
+
+  applyAuth: (requestParams) =>
+    { access_token } = @auth
+    requestParams.headers.Authorization = "Bearer " + access_token
+    return requestParams
 
   start: (device) =>
     { @uuid } = device
