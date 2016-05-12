@@ -26,26 +26,17 @@ class ParticleIo extends EventEmitter
     debug 'onMessage', { message }
     return if !message.payload.endpoint?
 
-    requestParams = format.processMessage message.payload, @auth, @defaultUrlParams
+    requestParams = format.processMessage message.payload, {}, @defaultUrlParams
 
     if @auth.access_token?
-      requestParams = @applyAuth(requestParams)
+      requestParams = @customizeRequest(requestParams)
       debug 'formatted request', requestParams
 
-      debug 'Sending Request'
-      request requestParams, (error, response, body) =>
-        return @sendError error if error?
-        body = JSON.parse(body)
-        @emit 'message', devices: ["*"], payload: body
-        debug 'Body: ', body
+      @sendRequest requestParams, message
     else
       @sendError 'Missing access_token!'
 
-  onConfig: (config) =>
-    return unless config?
-    debug 'on config', @uuid
-    @options = config.options || {}
-
+  saveAuth: () =>
     @defaultUrlParams = {}
 
     if @options.access_token?
@@ -53,19 +44,70 @@ class ParticleIo extends EventEmitter
         access_token: @options.access_token
       }
 
-  applyAuth: (requestParams) =>
+  customizeRequest: (requestParams) =>
     { access_token } = @auth
     requestParams.headers.Authorization = "Bearer " + access_token
     return requestParams
 
+  onConfig: (config) =>
+    return unless config?
+    debug 'on config', @uuid
+    @options = config.options || {}
+
+    @saveAuth()
+
   start: (device) =>
     { @uuid } = device
     debug 'started', @uuid
-    schemas = _.extend schemas, format.buildSchema()
-    @emit 'update', schemas
+    update = _.extend schemas, format.buildSchema()
+    update.octoblu ?= {}
+    update.octoblu.flow ?= {}
+    update.octoblu.flow.forwardMetadata = true
 
-  sendError: (ErrorMessage) =>
-    @emit 'message', devices: ["*"], topic: 'error', payload: ErrorMessage
+    @emit 'update', update
+
+  sendRequest: (requestParams, message) =>
+    debug 'Sending Request'
+    { fromUuid, metadata } = message
+    request requestParams, (error, response, body) =>
+      if error?
+          errorResponse = {
+            fromUuid: fromUuid
+            fromNodeId: metadata.flow.fromNodeId
+            error: error
+          }
+          return @sendError errorResponse
+      body = JSON.parse(body)
+      response = {
+          fromUuid: fromUuid
+          fromNodeId: metadata.flow.fromNodeId
+          metadata: metadata
+          data: body
+        }
+      @sendResponse response
+      debug 'Body: ', body
+
+  sendError: ({fromUuid, fromNodeId, error}) =>
+    code = error.code ? 500
+    @emit 'message', {
+      devices: [fromUuid]
+      payload:
+        from: fromNodeId
+        metadata:
+          code: code
+          status: http.STATUS_CODES[code]
+          error:
+            message: error.message ? 'Unknown Error'
+    }
+
+  sendResponse: ({fromUuid, fromNodeId, metadata, data}) =>
+   @emit 'message', {
+     devices: [fromUuid]
+     payload:
+       from: fromNodeId
+       metadata: metadata
+       data: data
+   }
 
 
 module.exports = ParticleIo
